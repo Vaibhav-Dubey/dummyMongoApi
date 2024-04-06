@@ -2,38 +2,25 @@ from flask import Flask, jsonify
 from pymongo import MongoClient
 
 app = Flask(__name__)
-PORT = 3000
 
-# MongoDB Atlas connection URI (replace with your connection string)
-uri = 'mongodb+srv://hackrtfm:YPpEK604DLIfIb1o@cluster0.lame0pq.mongodb.net/'
+# Setup MongoDB connection
+# Replace 'my_mongo_uri' with your actual MongoDB URI and 'mydatabase' with your database name
+client = MongoClient('mongodb+srv://vjk2018:hackrtfm@cluster0.wcypreo.mongodb.net/')
 
-# Endpoint to fetch data from MongoDB Atlas
-@app.route('/api/data')
+@app.route('/get_data', methods=['GET'])
 def get_data():
-    try:
-        # Connect to MongoDB Atlas
-        client = MongoClient(uri)
+    # Replace 'mycollection' with your actual collection name
+    collection = client['hackrtfm']['odb1']
+    
+    # Fetch all documents within the collection
+    # Limit the number of documents to prevent overload, here we are limiting to 10 documents
+    documents = list(collection.find())
+    
+    # Convert the documents to a list of dictionaries and exclude '_id' field
+    data = [{k: v for k, v in doc.items() if k != '_id'} for doc in documents]
 
-        # Access the database and collection
-        db = client.obdtwo
-        collection = db.obdtwo
+    # Return the data as JSON
+    return jsonify(data)
 
-        # Fetch data from MongoDB
-        data = list(collection.find({}))
-
-        # Close the connection
-        client.close()
-
-        # Convert ObjectId to string for JSON serialization
-        for item in data:
-            item['_id'] = str(item['_id'])
-
-        # Send the fetched data as JSON response
-        return jsonify(data), 200
-    except Exception as e:
-        print('Error fetching data:', e)
-        return jsonify({'error': 'Internal Server Error'}), 500
-
-# Start the server
 if __name__ == '__main__':
-    app.run(port=PORT)
+    app.run(debug=True)
